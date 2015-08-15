@@ -1,7 +1,6 @@
 Rails.application.routes.draw do
-  namespace :api, defaults: {format: :json}, only: :index do
-    resources :listings
-  end
+  
+  get 'listings' => 'api/listings#index', only: :index, defaults: {format: :json}
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".
 
