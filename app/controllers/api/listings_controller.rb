@@ -68,20 +68,28 @@ class Api::ListingsController < ApplicationController
     LISTING_FIELDS = [ :id, :street, :status, :price, :bedrooms, :bathrooms, :sq_ft, :lat, :lng]
     LISTING_MINS = [ :min_price, :min_bed, :min_bath ]
     LISTING_MAXS = [ :max_price, :max_bed, :max_bath]
+    LISTING_NUMERICS = [:price, :bedrooms, :bathrooms]
     LISTING_QUERY_PARAMS = LISTING_MINS + LISTING_MAXS
     def listing_params
       params.permit(*(LISTING_FIELDS + LISTING_QUERY_PARAMS))
     end
 
-  def query_args(query_hash)
-    #this takes the intersection of the two sets to ensure safety
-    mins = query_hash.keys & LISTING_MINS.map(&:to_s)
-    maxs = query_hash.keys & LISTING_MAXS.map(&:to_s)
-    fields = (mins.map { |key| "#{key} >= :#{key}" } + 
-              maxs.map { |key| "#{key} <= :#{key}" }).join(" and ")
-    values = {}
-    (mins + maxs).each { |key| values[key.to_sym] = "%#{query_hash[key]}%" }
-    return [fields, values]
-  end
+    def arg_parser(arg, value)
+      { 
+        min_bath: "bathrooms >= #{value}",
+        max_bath: "bathrooms <= #{value}",
+        min_bed: "bedrooms >= #{value}",
+        max_bed: "bedrooms <= #{value}",
+        min_price: "price >= #{value}",
+        max_price: "price <= #{value}",
+      }[arg]
+    end
+
+    def query_args(query_hash)
+      #this takes the intersection of the two sets to ensure safety
+      mins = query_hash.keys.map(&:to_sym) & LISTING_MINS
+      maxs = query_hash.keys.map(&:to_sym) & LISTING_MAXS
+      [(mins + maxs).map { |arg| arg_parser(arg, query_hash[arg]) }.join(" and ")]
+    end
 
 end
