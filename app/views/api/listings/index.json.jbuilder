@@ -5,7 +5,7 @@ json.features do
     json.geometry do 
       json.type "Point"
       json.coordinates do
-        json.array [listing.lat, listing.lng]
+        json.array! [listing.lat, listing.lng]
       end
     end
     json.properties do

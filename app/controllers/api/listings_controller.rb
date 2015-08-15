@@ -14,7 +14,7 @@ class Api::ListingsController < ApplicationController
     args ||= {}
     @listings = paginate Listing.where(*query_args(args))
     
-    render json: @listings
+    render :index
   end
 
 
