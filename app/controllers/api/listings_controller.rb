@@ -8,12 +8,7 @@ class Api::ListingsController < ApplicationController
   end
 
   def index
-    @page = params[:page] ? params[:page] : 1
-    if params[:query]
-      @listings = Listing.where(*query_args(params[:query]))
-    else
-      @listings = Listing.order(:id)
-    end
+    @listings = Listing.where(*query_args(params[:query]))
     @total_pages = @listings.total_pages
     paginate :index
   end
@@ -67,14 +62,19 @@ class Api::ListingsController < ApplicationController
   private
     # Never trust parameters from the scary internet, only allow the white list through.
     LISTING_FIELDS = [ :id, :street, :status, :price, :bedrooms, :bathrooms, :sq_ft, :lat, :lng]
+    LISTING_MAXS = [ :min_price, :min_bed, :min_bath ]
+    LISTING_MAXS = [ :max_price, :max_bed, :max_bath]
+    LISTING_QUERY_PARAMS = LISTING_MINS + LISTING_MAXS
     def listing_params
-      params.require(:listing).permit(*LISTING_FIELDS)
+      params.require(:listing).permit(*(LISTING_FIELDS + LISTING_QUERY_PARAMS))
     end
 
   def query_args(query_hash)
     #this takes the intersection of the two sets to ensure safety
-    keys = query_hash.keys & LISTING_FIELDS.map(&:to_s)
-    fields = keys.map { |key| "#{key} ILIKE :#{key}" }.join(" and ")
+    mins = query_hash.keys & LISTING_MINS.map(&:to_s)
+    maxs = query_hash.keys & LISTING_MAXS.map(&:to_s)
+    fields = (mins.map { |key| "#{key} >= :#{key}" } + 
+              maxs.map { |key| "#{key} <= :#{key}" }).join(" and ")
     values = {}
     keys.each { |key| values[key.to_sym] = "%#{query_hash[key]}%" }
     return [fields, values]

@@ -1,4 +1,15 @@
-json.array!(@api_listings) do |api_listing|
-  json.extract! api_listing, :id
-  json.url api_listing_url(api_listing, format: :json)
+json.type "FeatureCollection"
+json.features do  
+  json.array!(@listings) do |listing|
+    json.type "feature"
+    json.geometry do 
+      json.type "Point"
+      json.coordinates do
+        json.array [listing.lat, listing.lng]
+      end
+    end
+    json.properties do
+      json.extract! listing, :id, :price, :street, :bedrooms, :bathrooms, :sq_ft
+    end
+  end
 end
