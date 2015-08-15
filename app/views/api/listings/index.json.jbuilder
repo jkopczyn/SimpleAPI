@@ -1,11 +1,11 @@
 json.type "FeatureCollection"
 json.features do  
   json.array!(@listings) do |listing|
-    json.type "feature"
+    json.type "Feature"
     json.geometry do 
       json.type "Point"
       json.coordinates do
-        json.array! [listing.lat, listing.lng]
+        json.array! [listing.lat.to_f, listing.lng.to_f]
       end
     end
     json.properties do
