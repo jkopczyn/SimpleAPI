@@ -1,4 +1,5 @@
 class Api::ListingsController < ApplicationController
+
   before_action :set_api_listing, only: [:show, :edit, :update, :destroy]
 
   # GET /api/listings
@@ -8,9 +9,12 @@ class Api::ListingsController < ApplicationController
   end
 
   def index
-    @listings = Listing.where(*query_args(params[:query]))
-    @total_pages = @listings.total_pages
-    paginate :index
+    #@page = params[:page] ? params[:page] : 1
+    args = listing_params
+    args ||= {}
+    @listings = paginate Listing.where(*query_args(args))
+    
+    render json: @listings
   end
 
 
@@ -62,11 +66,11 @@ class Api::ListingsController < ApplicationController
   private
     # Never trust parameters from the scary internet, only allow the white list through.
     LISTING_FIELDS = [ :id, :street, :status, :price, :bedrooms, :bathrooms, :sq_ft, :lat, :lng]
-    LISTING_MAXS = [ :min_price, :min_bed, :min_bath ]
+    LISTING_MINS = [ :min_price, :min_bed, :min_bath ]
     LISTING_MAXS = [ :max_price, :max_bed, :max_bath]
     LISTING_QUERY_PARAMS = LISTING_MINS + LISTING_MAXS
     def listing_params
-      params.require(:listing).permit(*(LISTING_FIELDS + LISTING_QUERY_PARAMS))
+      params.permit(*(LISTING_FIELDS + LISTING_QUERY_PARAMS))
     end
 
   def query_args(query_hash)
@@ -76,7 +80,7 @@ class Api::ListingsController < ApplicationController
     fields = (mins.map { |key| "#{key} >= :#{key}" } + 
               maxs.map { |key| "#{key} <= :#{key}" }).join(" and ")
     values = {}
-    keys.each { |key| values[key.to_sym] = "%#{query_hash[key]}%" }
+    (mins + maxs).each { |key| values[key.to_sym] = "%#{query_hash[key]}%" }
     return [fields, values]
   end
 

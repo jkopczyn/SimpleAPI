@@ -1,8 +1,5 @@
 Rails.application.routes.draw do
-  namespace :api do
-    resources :listings
-  end
-  namespace :api do
+  namespace :api, defaults: {format: :json}, only: :index do
     resources :listings
   end
   # The priority is based upon order of creation: first created -> highest priority.
