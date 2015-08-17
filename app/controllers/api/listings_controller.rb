@@ -4,9 +4,6 @@ class Api::ListingsController < ApplicationController
 
   # GET /api/listings
   # GET /api/listings.json
-  def index
-    @listings = Listing.all
-  end
 
   def index
     #@page = params[:page] ? params[:page] : 1
@@ -16,52 +13,6 @@ class Api::ListingsController < ApplicationController
     
     render :index
   end
-
-
-  # GET /api/listings/1
-  # GET /api/listings/1.json
-  def show
-  end
-
-  ## POST /api/listings
-  ## POST /api/listings.json
-  #def create
-  #  @listing = Listing.new(api_listing_params)
-
-  #  respond_to do |format|
-  #    if @listing.save
-  #      format.html { redirect_to @listing, notice: 'Listing was successfully created.' }
-  #      format.json { render :show, status: :created, location: @listing }
-  #    else
-  #      format.html { render :new }
-  #      format.json { render json: @listing.errors, status: :unprocessable_entity }
-  #    end
-  #  end
-  #end
-
-  ## PATCH/PUT /api/listings/1
-  ## PATCH/PUT /api/listings/1.json
-  #def update
-  #  respond_to do |format|
-  #    if @listing.update(api_listing_params)
-  #      format.html { redirect_to @listing, notice: 'Listing was successfully updated.' }
-  #      format.json { render :show, status: :ok, location: @listing }
-  #    else
-  #      format.html { render :edit }
-  #      format.json { render json: @listing.errors, status: :unprocessable_entity }
-  #    end
-  #  end
-  #end
-
-  ## DELETE /api/listings/1
-  ## DELETE /api/listings/1.json
-  #def destroy
-  #  @listing.destroy
-  #  respond_to do |format|
-  #    format.html { redirect_to api_listings_url, notice: 'Listing was successfully destroyed.' }
-  #    format.json { head :no_content }
-  #  end
-  #end
 
   private
     # Never trust parameters from the scary internet, only allow the white list through.
@@ -74,15 +25,14 @@ class Api::ListingsController < ApplicationController
       params.permit(*(LISTING_FIELDS + LISTING_QUERY_PARAMS))
     end
 
-    def arg_parser(arg, value)
-      value = value.to_i
+    def arg_parser(arg)
       { 
-        min_bath: "bathrooms >= #{value}",
-        max_bath: "bathrooms <= #{value}",
-        min_bed: "bedrooms >= #{value}",
-        max_bed: "bedrooms <= #{value}",
-        min_price: "price >= #{value}",
-        max_price: "price <= #{value}",
+        min_bath: "bathrooms >= :min_bath",
+        max_bath: "bathrooms <= :max_bath",
+        min_bed: "bedrooms >= :min_bed",
+        max_bed: "bedrooms <= :max_bed",
+        min_price: "price >= :min_price",
+        max_price: "price <= :max_price",
       }[arg]
     end
 
@@ -90,7 +40,7 @@ class Api::ListingsController < ApplicationController
       #this takes the intersection of the two sets to ensure safety
       mins = query_hash.keys.map(&:to_sym) & LISTING_MINS
       maxs = query_hash.keys.map(&:to_sym) & LISTING_MAXS
-      [(mins + maxs).map { |arg| arg_parser(arg, query_hash[arg]) }.join(" and ")]
+      [(mins + maxs).map { |arg| arg_parser(arg) }.join(" and "), query_hash]
     end
 
 end
