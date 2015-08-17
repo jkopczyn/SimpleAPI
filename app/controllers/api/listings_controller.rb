@@ -75,6 +75,7 @@ class Api::ListingsController < ApplicationController
     end
 
     def arg_parser(arg, value)
+      value = value.to_i
       { 
         min_bath: "bathrooms >= #{value}",
         max_bath: "bathrooms <= #{value}",
